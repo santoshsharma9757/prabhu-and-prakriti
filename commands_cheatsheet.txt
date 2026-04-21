@@ -1,0 +1,42 @@
+Bhakti Shorts Automation Commands
+=================================
+
+Setup
+-----
+cd d:\yt-2\bhakti_shorts_automation
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+Copy-Item .env.example .env
+
+Generate 1 Short
+----------------
+python main.py --count 1
+
+Generate 2 Shorts
+-----------------
+python main.py --count 2
+
+Generate a Topic-Based Short
+----------------------------
+python main.py --topic "महाकाल पर भरोसा क्यों सब बदल देता है"
+
+Generate 2 Shorts and Try Upload
+--------------------------------
+python main.py --count 2 --upload
+
+Generate With Pexels Visuals
+----------------------------
+python main.py --count 1 --use-pexels
+
+Generate and Save Schedule
+--------------------------
+python main.py --count 2 --schedule
+
+Upload Previously Generated Videos
+----------------------------------
+python upload_all.py --limit 5
+
+Open Latest Logs
+----------------
+Get-Content .\logs\automation.log -Tail 100

@@ -1,0 +1,11 @@
+python-dotenv>=1.0.1
+openai>=1.40.0
+requests>=2.32.3
+moviepy>=2.1.1
+pillow>=10.4.0
+numpy>=1.26.4
+edge-tts>=6.1.12
+gTTS>=2.5.1
+google-api-python-client>=2.151.0
+google-auth-oauthlib>=1.2.1
+google-auth-httplib2>=0.2.0

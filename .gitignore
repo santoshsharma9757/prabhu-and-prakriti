@@ -1,0 +1,28 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Secrets
+client_secret.json
+youtube_token.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Project specific
+output/
+logs/
+data/*.json
+
+# Assets
+# If you want to track branding but not music/temp assets
+# assets/music/
+
+# OS files
+.DS_Store
+Thumbs.db
