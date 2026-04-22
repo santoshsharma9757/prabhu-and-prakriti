@@ -66,8 +66,11 @@ class YouTubeUploader:
         }
         if publish_at:
             # YouTube expects ISO 8601 with timezone (e.g. Z or +05:30)
-            # We assume the time is already in the correct format or we add Z
-            status_body["publishAt"] = f"{publish_at}:00Z" if "Z" not in publish_at else publish_at
+            if "Z" in publish_at or "+" in publish_at or "-" in publish_at:
+                status_body["publishAt"] = publish_at
+            else:
+                # Fallback for old format or missing offset
+                status_body["publishAt"] = f"{publish_at}:00Z"
 
         request = youtube.videos().insert(
             part="snippet,status",

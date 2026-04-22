@@ -26,26 +26,29 @@ class SEOGenerator:
         if not self.client:
             return fallback_seo(idea, script, self.settings.channel_name)
         prompt = {
-            "task": "Generate SEO metadata for a spiritual/devotional YouTube Short.",
+            "task": "Generate high-CTR SEO metadata for a spiritual/devotional YouTube Short.",
             "rules": [
                 "Return JSON only.",
-                "Title MUST have a curiosity-gap or emotional hook (e.g. 'Iski wajah se dukh aata hai? #shorts').",
-                "Place 1 viral hashtag and 1 niche hashtag at the end of the title (e.g. #shorts #hanuman).",
-                "Description should be ultra-short (under 30 words) to encourage loop-watching.",
-                "Use 10-15 highly relevant tags in English.",
+                "Title MUST have an intense curiosity-gap or emotional hook (e.g. 'Isiliye Hanuman Ji ne aisa kiya? 😱 #shorts').",
+                "Title must be in Hinglish but include keywords like 'Mahadev', 'Hanuman', 'Bhakti', 'Power' etc where applicable.",
+                "Place 3-4 viral hashtags at the end of the title (e.g. #shorts #viral #bhakti #mahakal).",
+                "Description should be ultra-short (under 25 words) but include a call to comment 'Jai Shri Ram' or 'Jai Mahakal'.",
+                "Use 10-15 highly relevant tags in English and Hinglish (e.g. 'mahakal status', 'hanuman ji shorts', 'spiritual motivation').",
                 "Use Hinglish (Hindi words in English Alphabet) for the title and description.",
             ],
             "channel_name": self.settings.channel_name,
             "idea": {"topic": idea.get("topic"), "theme": idea.get("theme")},
             "script": {"hook": script.get("hook"), "short_title": script.get("short_on_screen_text")},
             "output_schema": {
-                "title": "Sabse Badi Shakti Hanuman Ji #shorts #hanuman",
-                "description": "Janiye Hanuman ji ki sakti ke bare mein... #hanuman #bhakti",
-                "hashtags": ["#shorts", "#hanuman", "#bhakti", "#mahakal", "#sanatan"],
+                "title": "Sabse Badi Shakti Hanuman Ji Ki 😱 #shorts #viral #hanuman #bhakti",
+                "description": "Janiye Hanuman ji ki sakti ka raaz... Jai Bajrangbali! 🙏 #hanuman #bhakti #viral",
+                "hashtags": ["#shorts", "#viral", "#hanuman", "#bhakti", "#mahakal", "#sanatan", "#trending"],
                 "tags": [
                     "hanuman ji shorts",
                     "bhakti status hinglish",
                     "sanatan dharma",
+                    "viral spiritual shorts",
+                    "mahakal status 2024",
                 ],
             },
         }

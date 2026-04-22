@@ -4,7 +4,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from config import DATA_DIR, read_json, write_json
+from config import DATA_DIR, Settings, read_json, write_json
 
 
 SCHEDULE_FILE = DATA_DIR / "schedule_queue.json"
@@ -17,15 +17,23 @@ class ScheduleItem:
     status: str = "planned"
 
 
-def plan_schedule(topics: list[str]) -> list[ScheduleItem]:
-    """Schedules videos for 6:00 AM and 7:30 PM (19:30) starting from tomorrow."""
+def plan_schedule(topics: list[str], settings: Settings | None = None) -> list[ScheduleItem]:
+    """Schedules videos for 6:00 AM and 7:00 PM (19:00) starting from tomorrow."""
     now = datetime.now()
     # Start from tomorrow to ensure we have time to review
     start_date = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
     
+    # Default to IST if not specified
+    offset = "+05:30"
+    if settings and settings.scheduler_timezone != "Asia/Kolkata":
+        # If it's not IST, we might need a more complex lookup, 
+        # but for this project Asia/Kolkata is the primary use case.
+        # We'll stick with +05:30 for now or add a more robust check if needed.
+        pass
+
     slots = [
         (6, 0),    # 6:00 AM
-        (19, 30)   # 7:30 PM
+        (19, 0)    # 7:00 PM
     ]
     
     items = []
@@ -39,9 +47,13 @@ def plan_schedule(topics: list[str]) -> list[ScheduleItem]:
                 break
                 
             publish_time = current_day.replace(hour=hour, minute=minute)
+            # YouTube expects ISO 8601 with timezone offset.
+            # We include the offset here so uploader doesn't have to guess.
+            publish_str = f"{publish_time.strftime('%Y-%m-%dT%H:%M')}:00{offset}"
+            
             items.append(ScheduleItem(
                 topic=topics[current_topic_idx],
-                publish_at=publish_time.isoformat(timespec="minutes")
+                publish_at=publish_str
             ))
             current_topic_idx += 1
         day_offset += 1

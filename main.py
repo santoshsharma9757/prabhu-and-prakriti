@@ -145,7 +145,7 @@ def main() -> None:
     )
 
     if args.schedule:
-        schedule_items = plan_schedule([item["idea"]["topic"] for item in items])
+        schedule_items = plan_schedule([item["idea"]["topic"] for item in items], settings=settings)
         for i, item in enumerate(items):
             if i < len(schedule_items):
                 item["publish_at"] = schedule_items[i].publish_at

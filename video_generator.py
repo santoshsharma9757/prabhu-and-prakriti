@@ -133,32 +133,59 @@ class VideoGenerator:
         return concatenate_videoclips(clips, method="compose").with_duration(duration)
 
     def _download_pexels_media(self, idea: dict[str, Any], count: int = 3) -> list[Path]:
-        queries = idea.get("visual_queries") or [
+        # Mapping for better Pexels search results for Indian deities
+        deity_mapping = {
+            "mahakal": ["lord shiva statue", "mahadav", "shiva temple", "mountains sunrise"],
+            "hanuman ji": ["hanuman statue", "lord hanuman", "indian temple bells", "prayer hands"],
+            "maa durga": ["goddess durga", "hindu temple", "indian festival aarti", "diya light"],
+            "vishnu ji": ["lord vishnu", "spiritual india", "river aarti", "lotus flower"],
+            "krishna bhakti": ["lord krishna statue", "vrindavan temple", "flute peacock", "indian village"],
+            "ram bhakti": ["lord ram", "ayodhya temple", "ancient india", "sunrise spiritual"],
+        }
+        
+        theme = idea.get("theme", "").lower()
+        topic = idea.get("topic", "").lower()
+        
+        base_queries = idea.get("visual_queries") or [
             "spiritual india",
-            "statue india",
             "temple bells",
-            "nature spiritual",
+            "indian monk",
+            "himalayas",
         ]
+        
+        # Inject deity-specific queries at the front
+        queries = []
+        for key, vals in deity_mapping.items():
+            if key in theme or key in topic:
+                queries.extend(vals)
+        queries.extend(base_queries)
+        # Remove duplicates while preserving order
+        queries = list(dict.fromkeys(queries))
+
         headers = {"Authorization": self.settings.pexels_api_key}
         downloaded = []
         
-        # Try videos first
+        # Try videos first for better engagement
         for query in queries:
             if len(downloaded) >= count: break
             try:
+                # Search for videos
                 response = requests.get(
                     "https://api.pexels.com/videos/search",
                     headers=headers,
-                    params={"query": query, "orientation": "portrait", "per_page": 1},
+                    params={"query": query, "orientation": "portrait", "per_page": 2},
                     timeout=30,
                 )
                 response.raise_for_status()
                 data = response.json()
-                videos = data.get("videos", [])
-                if videos:
-                    video_files = videos[0].get("video_files", [])
-                    # Pick a good quality HD file
-                    best_file = next((f for f in video_files if f.get("width") and f.get("width") >= 720), video_files[0])
+                for video_data in data.get("videos", []):
+                    if len(downloaded) >= count: break
+                    video_files = video_data.get("video_files", [])
+                    # Pick a good quality HD file (720p or better)
+                    best_file = next((f for f in video_files if f.get("width") and 720 <= f.get("width") <= 1440), None)
+                    if not best_file:
+                        best_file = video_files[0]
+                    
                     media_url = best_file.get("link")
                     if media_url:
                         clean_url = media_url.split("?")[0].split("&")[0]
@@ -172,33 +199,34 @@ class VideoGenerator:
             except Exception as exc:
                 LOGGER.warning("Pexels video query failed for '%s': %s", query, exc)
 
-        # Fallback to images if needed
-        for query in queries:
-            if len(downloaded) >= count: break
-            try:
-                response = requests.get(
-                    "https://api.pexels.com/v1/search",
-                    headers=headers,
-                    params={"query": query, "orientation": "portrait", "per_page": 1},
-                    timeout=30,
-                )
-                response.raise_for_status()
-                data = response.json()
-                photos = data.get("photos", [])
-                if photos:
-                    src = photos[0].get("src", {})
-                    media_url = src.get("portrait") or src.get("large2x")
-                    if media_url:
-                        clean_url = media_url.split("?")[0]
-                        ext = Path(clean_url).suffix or ".jpg"
-                        target = OUTPUT_IMAGES_DIR / f"pexels_img_{abs(hash(query))}_{abs(hash(media_url))}{ext}"
-                        if not target.exists():
-                            media = requests.get(media_url, timeout=60)
-                            media.raise_for_status()
-                            target.write_bytes(media.content)
-                        downloaded.append(target)
-            except Exception as exc:
-                LOGGER.warning("Pexels image query failed for '%s': %s", query, exc)
+        # Fallback to images if videos are sparse
+        if len(downloaded) < count:
+            for query in queries:
+                if len(downloaded) >= count: break
+                try:
+                    response = requests.get(
+                        "https://api.pexels.com/v1/search",
+                        headers=headers,
+                        params={"query": query, "orientation": "portrait", "per_page": 2},
+                        timeout=30,
+                    )
+                    response.raise_for_status()
+                    data = response.json()
+                    for photo in data.get("photos", []):
+                        if len(downloaded) >= count: break
+                        src = photo.get("src", {})
+                        media_url = src.get("portrait") or src.get("large2x")
+                        if media_url:
+                            clean_url = media_url.split("?")[0]
+                            ext = Path(clean_url).suffix or ".jpg"
+                            target = OUTPUT_IMAGES_DIR / f"pexels_img_{abs(hash(query))}_{abs(hash(media_url))}{ext}"
+                            if not target.exists():
+                                media = requests.get(media_url, timeout=60)
+                                media.raise_for_status()
+                                target.write_bytes(media.content)
+                            downloaded.append(target)
+                except Exception as exc:
+                    LOGGER.warning("Pexels image query failed for '%s': %s", query, exc)
                 
         return downloaded
 
