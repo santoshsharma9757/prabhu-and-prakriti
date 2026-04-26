@@ -33,6 +33,18 @@ Generate and Save Schedule
 --------------------------
 python main.py --count 2 --schedule
 
+Use Local Videos (God/Nature)
+-----------------------------
+python main.py --count 1 --local
+
+Music-Only Mode (Fast, No TTS)
+------------------------------
+python main.py --count 1 --pexel-music
+
+Balanced Mix (2 Local, 2 Pexels)
+--------------------------------
+python main.py --count 4 --mix
+
 Upload Previously Generated Videos
 ----------------------------------
 python upload_all.py --limit 5

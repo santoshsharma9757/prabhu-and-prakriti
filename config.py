@@ -20,7 +20,9 @@ OUTPUT_IMAGES_DIR = OUTPUT_DIR / "images"
 OUTPUT_SUBTITLES_DIR = OUTPUT_DIR / "subtitles"
 OUTPUT_VIDEO_DIR = OUTPUT_DIR / "video"
 MUSIC_DIR = ASSETS_DIR / "music"
+TRENDING_MUSIC_DIR = ASSETS_DIR / "trending_music"
 FONTS_DIR = ASSETS_DIR / "fonts"
+LOCAL_VIDEOS_DIR = ASSETS_DIR / "localvideos"
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -145,7 +147,13 @@ def ensure_directories() -> None:
         OUTPUT_SUBTITLES_DIR,
         OUTPUT_VIDEO_DIR,
         MUSIC_DIR,
+        TRENDING_MUSIC_DIR,
+        TRENDING_MUSIC_DIR / "god",
+        TRENDING_MUSIC_DIR / "nature",
         FONTS_DIR,
+        LOCAL_VIDEOS_DIR,
+        LOCAL_VIDEOS_DIR / "nature",
+        LOCAL_VIDEOS_DIR / "god",
     ]:
         path.mkdir(parents=True, exist_ok=True)
 

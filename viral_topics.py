@@ -17,6 +17,12 @@ TREND_BANK: dict[str, list[dict[str, object]]] = {
             "cta": "हर हर महादेव कमेंट करो",
             "queries": ["diya flame", "incense temple", "temple bells"],
         },
+        {
+            "topic": "क्यों श्मशान के स्वामी शिव ही जीवन के रक्षक हैं",
+            "hook": "मृत्यु से भय उन्हें लगता है जो शिव को नहीं जानते",
+            "cta": "हर हर महादेव",
+            "queries": ["shiva meditation", "ghat aarti", "smoke spiritual"],
+        },
     ],
     "hanuman ji": [
         {
@@ -26,10 +32,10 @@ TREND_BANK: dict[str, list[dict[str, object]]] = {
             "queries": ["prayer hands", "temple india", "devotional crowd"],
         },
         {
-            "topic": "डर, बाधा और नकारात्मकता पर हनुमान भक्ति की विजय",
-            "hook": "जहां हनुमान का नाम है, वहां साहस हारता नहीं",
+            "topic": "हनुमान जी से सीखें: असंभव को संभव बनाने का मंत्र",
+            "hook": "राम काज कीन्ही बिनु मोहि कहाँ विश्राम",
             "cta": "जय हनुमान लिखो",
-            "queries": ["sunrise spiritual", "prayer hands", "river aarti"],
+            "queries": ["sunrise peak", "strength power", "hanuman statue"],
         },
     ],
     "maa durga": [
@@ -68,7 +74,27 @@ TREND_BANK: dict[str, list[dict[str, object]]] = {
             "hook": "जब मन उलझे, कृष्ण स्मरण दिशा देता है",
             "cta": "राधे राधे लिखो",
             "queries": ["river aarti", "meditation india", "temple bells"],
-        }
+        },
+        {
+            "topic": "सच्चा प्रेम और समर्पण क्या है? राधा-कृष्ण से सीखें",
+            "hook": "प्रेम वो नहीं जो बांध ले, प्रेम वो है जो मुक्त कर दे",
+            "cta": "जय श्री कृष्णा",
+            "queries": ["flute music", "peacock feather", "garden spiritual"],
+        },
+    ],
+    "nature": [
+        {
+            "topic": "प्रकृति की शांति में ही ईश्वर की आवाज़ सुनाई देती है",
+            "hook": "क्या आपने कभी पत्तों की सरसराहट में खुदा को सुना है?",
+            "cta": "प्रकृति से प्यार है तो ❤️ दें",
+            "queries": ["forest mist", "waterfall slow motion", "nature landscape"],
+        },
+        {
+            "topic": "नदी का बहाव सिखाता है कि जीवन में रुकना नहीं, बहना है",
+            "hook": "पत्थर कितने भी हों, नदी अपना रास्ता बना ही लेती है",
+            "cta": "I Love Nature लिखो",
+            "queries": ["river flow", "mountain stream", "sunset reflection"],
+        },
     ],
     "ram bhakti": [
         {

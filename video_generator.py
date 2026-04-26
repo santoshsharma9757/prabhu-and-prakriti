@@ -34,72 +34,192 @@ class VideoGenerator:
         idea: dict[str, Any],
         script: dict[str, Any],
         seo: dict[str, Any],
-        audio_path: Path,
-        subtitle_path: Path,
+        audio_path: Path | None,
+        subtitle_path: Path | None,
         output_path: Path,
         use_pexels: bool = False,
+        local: bool = False,
+        pexel_music: bool = False,
     ) -> Path:
-        with AudioFileClip(str(audio_path)) as narration:
-            duration = narration.duration
-            visual_clip = self._build_background_clip(
-                idea=idea,
-                duration=duration,
-                use_pexels=use_pexels,
-            )
-            overlays = [
-                self._create_top_text_clip(script["short_on_screen_text"], duration=duration),
-            ]
-            for seg in build_subtitle_segments(script["full_script"], duration):
-                overlays.append(
-                    self._create_subtitle_clip(
-                        seg["text"],
-                        start=float(seg["start"]),
-                        end=float(seg["end"]),
-                    )
-                )
+        duration = 30.0 # Default fallback
+        if audio_path and audio_path.exists():
+            with AudioFileClip(str(audio_path)) as narration:
+                duration = narration.duration
+        elif pexel_music:
+            duration = random.randint(30, 45)
 
-            video = CompositeVideoClip(
-                [visual_clip] + overlays,
-                size=(self.settings.frame_width, self.settings.frame_height),
-            )
-            audio_mix = self._build_audio_mix(narration)
+        visual_clip = self._build_background_clip(
+            idea=idea,
+            duration=duration,
+            use_pexels=use_pexels,
+            local=local,
+        )
+        
+        # Adjust duration if visual_clip is shorter
+        duration = min(duration, visual_clip.duration)
+
+        overlays = []
+        if pexel_music:
+            # Short 3-5 word text with emoji for pexel-music mode
+            text_options = [
+                f"{idea['topic']} ❤️",
+                f"I Love Nature 🌿",
+                f"Sacred Moments ✨",
+                f"Peaceful Soul 🕉️",
+                f"Divine Connection 🙏",
+            ]
+            display_text = random.choice(text_options)
+            if "top_text" in idea and len(idea["top_text"].split()) <= 6:
+                display_text = idea["top_text"]
+            
+            overlays.append(self._create_top_text_clip(display_text, duration=duration))
+        else:
+            # Standard storytelling overlays
+            overlays.append(self._create_top_text_clip(script["short_on_screen_text"], duration=duration))
+            if subtitle_path and subtitle_path.exists():
+                for seg in build_subtitle_segments(script["full_script"], duration):
+                    overlays.append(
+                        self._create_subtitle_clip(
+                            seg["text"],
+                            start=float(seg["start"]),
+                            end=float(seg["end"]),
+                        )
+                    )
+
+        video = CompositeVideoClip(
+            [visual_clip] + overlays,
+            size=(self.settings.frame_width, self.settings.frame_height),
+        ).with_duration(duration)
+
+        # Build audio mix including original video audio if it exists
+        bg_audio = None
+        if visual_clip.audio:
+            bg_audio = visual_clip.audio.with_volume_scaled(0.4) # Keep original music but lower it for narration
+            
+        audio_mix = self._build_audio_mix(
+            idea=idea,
+            narration=AudioFileClip(str(audio_path)) if audio_path else None,
+            duration=duration,
+            local=local,
+            bg_audio=bg_audio
+        )
+        if audio_mix:
             final = video.with_audio(audio_mix)
-            final.write_videofile(
-                str(output_path),
-                fps=self.settings.fps,
-                codec="libx264",
-                audio_codec="aac",
-                threads=2,
-                preset="medium",
-                ffmpeg_params=["-pix_fmt", "yuv420p"],
-                logger=None,
-            )
-            final.close()
-            video.close()
-            visual_clip.close()
+        else:
+            final = video
+
+        final.write_videofile(
+            str(output_path),
+            fps=self.settings.fps,
+            codec="libx264",
+            audio_codec="aac",
+            threads=2,
+            preset="medium",
+            ffmpeg_params=["-pix_fmt", "yuv420p"],
+            logger=None,
+        )
+        final.close()
+        video.close()
+        visual_clip.close()
+        if audio_mix:
             audio_mix.close()
         LOGGER.info("Created video at %s with subtitles %s", output_path, subtitle_path)
         return output_path
 
-    def _build_audio_mix(self, narration: AudioFileClip) -> CompositeAudioClip:
-        clips = [narration]
-        music_files = sorted(MUSIC_DIR.glob("*"))
+    def _build_audio_mix(
+        self,
+        idea: dict[str, Any],
+        narration: AudioFileClip | None,
+        duration: float,
+        local: bool = False,
+        bg_audio: Any | None = None,
+    ) -> CompositeAudioClip | None:
+        clips = []
+        if narration:
+            clips.append(narration)
+        
+        if bg_audio:
+            clips.append(bg_audio)
+
+        if local:
+            # For local videos, we use the original audio (bg_audio) and narration only.
+            return CompositeAudioClip(clips) if clips else None
+
+        from config import MUSIC_DIR
+        
+        # Determine theme subfolder
+        theme = idea.get("theme", "").lower()
+        topic = idea.get("topic", "").lower()
+        subfolder = "god" if any(x in theme or x in topic for x in ["god", "shiva", "hanuman", "ram", "krishna", "bhakti"]) else "nature"
+        
+        # Try theme-specific folder in assets/music first
+        themed_dir = MUSIC_DIR / subfolder
+        music_files = sorted(themed_dir.glob("*"))
+        
+        if not music_files:
+            # Fallback to main assets/music dir
+            music_files = sorted(MUSIC_DIR.glob("*"))
+            
         if music_files:
-            music = AudioFileClip(str(random.choice(music_files)))
-            if music.duration > narration.duration:
-                music = music.subclipped(0, narration.duration)
-            music = music.with_duration(narration.duration).with_volume_scaled(0.50)
-            clips.append(music)
-        return CompositeAudioClip(clips)
+            # Filter for audio files
+            music_files = [f for f in music_files if f.suffix.lower() in {".mp3", ".wav", ".m4a"}]
+            if music_files:
+                music = AudioFileClip(str(random.choice(music_files)))
+                
+                # Make each video unique by picking a random start point
+                if music.duration > duration + 5:
+                    start_limit = int(music.duration - duration - 2)
+                    start_pt = random.randint(0, start_limit)
+                    music = music.subclipped(start_pt, start_pt + duration)
+                elif music.duration > duration:
+                    music = music.subclipped(0, duration)
+                
+                # Normalize volume: 0.50 with narration, 0.85 without
+                volume = 0.50 if narration else 0.85
+                music = music.with_duration(duration).with_volume_scaled(volume)
+                clips.append(music)
+        
+        return CompositeAudioClip(clips) if clips else None
 
     def _build_background_clip(
         self,
         idea: dict[str, Any],
         duration: float,
         use_pexels: bool,
+        local: bool = False,
     ) -> Any:
         clips = []
-        if use_pexels and self.settings.pexels_api_key:
+        if local:
+            from config import LOCAL_VIDEOS_DIR
+            theme = idea.get("theme", "").lower()
+            topic = idea.get("topic", "").lower()
+            
+            subfolder = "god" if any(x in theme or x in topic for x in ["god", "shiva", "hanuman", "ram", "krishna", "bhakti"]) else "nature"
+            folder = LOCAL_VIDEOS_DIR / subfolder
+            local_files = sorted(list(folder.glob("*.mp4")) + list(folder.glob("*.mov")))
+            
+            if local_files:
+                random.shuffle(local_files)
+                current_dur = 0
+                for path in local_files:
+                    if current_dur >= duration: break
+                    try:
+                        clip = VideoFileClip(str(path))
+                        # Standardize to 9:16
+                        w, h = clip.size
+                        target_w = int(h * 9 / 16)
+                        clip = clip.cropped(x_center=w/2, width=target_w).resized(new_size=(self.settings.frame_width, self.settings.frame_height))
+                        
+                        needed = duration - current_dur
+                        if clip.duration > needed:
+                            clip = clip.subclipped(0, needed)
+                        
+                        clips.append(clip)
+                        current_dur += clip.duration
+                    except Exception as e:
+                        LOGGER.warning(f"Failed to process local clip {path}: {e}")
+        
+        if not clips and use_pexels and self.settings.pexels_api_key:
             media_paths = self._download_pexels_media(idea, count=5)
             if media_paths:
                 segment_duration = duration / len(media_paths)

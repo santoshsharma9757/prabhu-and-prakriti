@@ -134,15 +134,15 @@ class IdeaGenerator:
 
         import random
         # 50% God storytelling, 50% Nature/Universe discussion
-        god_focus = "God storytelling, Parables, and Life lessons from Hanuman Ji, Shiva, Ram Ji, or Krishna."
-        nature_focus = "Nature, Meditation, Karma, Universe, or a devotee asking God for guidance in front of nature."
+        god_focus = "Life lessons from Hanuman Ji, Shiva, Ram Ji, or Krishna. Focus on their stories and virtues."
+        nature_focus = "Pure Nature, Mountains, Rivers, Universe, and Soul. Focus on the beauty of creation, peace, and environment. NO specific mention of deities in these topics."
         
         god_visuals = "'temple india', 'shiva statue', 'hanuman statue', 'indian god', 'hindu prayer'"
-        nature_visuals = "'meditation nature', 'monsoon rain forest', 'person praying to sky', 'spiritual light', 'mountain sunrise'"
+        nature_visuals = "'himalayan mountains', 'forest river', 'green valley', 'sunrise nature', 'peaceful landscape'"
 
         if count >= 2:
             theme_focus = f"A balanced 50/50 mix of '{god_focus}' and '{nature_focus}'."
-            visual_focus = f"Use {god_visuals} for God stories and {nature_visuals} for Nature stories."
+            visual_focus = f"Use {god_visuals} for God topics and {nature_visuals} for Nature topics."
         else:
             is_nature_theme = random.random() < 0.5
             theme_focus = nature_focus if is_nature_theme else god_focus
