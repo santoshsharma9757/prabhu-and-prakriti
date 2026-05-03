@@ -44,6 +44,8 @@ python main.py --count 1 --pexel-music
 Balanced Mix (2 Local, 2 Pexels)
 --------------------------------
 python main.py --count 4 --mix
+https://buffer.com/resources/best-time-to-post-on-youtube/
+
 
 Upload Previously Generated Videos
 ----------------------------------
